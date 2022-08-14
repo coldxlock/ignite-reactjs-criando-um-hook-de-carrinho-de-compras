@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext, useState } from 'react';
+import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { api } from '../services/api';
 import { Product, Stock } from '../types';
@@ -35,10 +35,29 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
   const addProduct = async (productId: number) => {
     try {
       // TODO
+
+      const response = await api.get('/products/' + productId);
+      
+      const { data } = response;
+     
+      const product = {
+        id : productId,
+        title: data.title,
+        price: data.price,
+        image: data.image,
+        amount: 1 ,
+      }
+
+      setCart(oldProducts => [...oldProducts, product]);      
+    
     } catch {
       // TODO
     }
   };
+
+  // useEffect(() => { 
+  //   console.log(cart)
+  // },[cart]);
 
   const removeProduct = (productId: number) => {
     try {
