@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   MdDelete,
   MdAddCircleOutline,
@@ -7,6 +7,7 @@ import {
 
 import { useCart } from '../../hooks/useCart';
 import { formatPrice } from '../../util/format';
+import { ProductList } from '../Home/styles';
 import { Container, ProductTable, Total } from './styles';
 
 interface Product {
@@ -19,28 +20,48 @@ interface Product {
 
 const Cart = (): JSX.Element => {
   const { cart, removeProduct, updateProductAmount } = useCart();
-
+  
   // const cartFormatted = cart.map(product => ({
   //   // TODO
-  // }))
-  const total =
-    formatPrice(
-      cart.reduce((sumTotal, product) => {
-        // TODO
-      }, 0)
-    )
+  //   product.price    
+  // })) 
 
-  function handleProductIncrement(product: Product) {
-    // TODO
+  // CALCULANDO O TOTAL GERAL DE COMRPAS NO CARRINHO
+  const total = cart.reduce((sumTotal, product) => {
+    sumTotal += product.price * product.amount;   
+   
+    return sumTotal;
+  }, 0) 
+
+  function handleProductIncrement(product: Product) {                 
+    // // TODO
+    const increment = {
+      productId: product.id,
+      amount: product.amount +1
+    }
+
+    updateProductAmount(increment)
+   
   }
 
-  function handleProductDecrement(product: Product) {
+  function handleProductDecrement(product: Product) {   
     // TODO
+    const decrement = {
+      productId: product.id,
+      amount: product.amount -1
+    }
+
+    updateProductAmount(decrement)
   }
 
   function handleRemoveProduct(productId: number) {
-    // TODO
+    // TODO        
+    removeProduct(productId);  
   }
+
+  // useEffect(() => {
+  //   console.log('total', total)
+  // }, [total]);
 
   return (
     <Container>
@@ -55,61 +76,78 @@ const Cart = (): JSX.Element => {
           </tr>
         </thead>
         <tbody>
-          <tr data-testid="product">
-            <td>
-              <img src="https://rocketseat-cdn.s3-sa-east-1.amazonaws.com/modulo-redux/tenis1.jpg" alt="Tênis de Caminhada Leve Confortável" />
-            </td>
-            <td>
-              <strong>Tênis de Caminhada Leve Confortável</strong>
-              <span>R$ 179,90</span>
-            </td>
-            <td>
-              <div>
+          {/* LISTANDO AS COMPRAS FEITAS NO CARRINHO */}
+          {cart.map((productCarrinho) => {
+            return(
+              <tr data-testid="product" key={productCarrinho.id}>
+              <td>
+                <img src={productCarrinho.image} alt="" />
+              </td>
+              <td>
+                <strong>{productCarrinho.title}</strong>
+                <strong>
+                  {formatPrice(productCarrinho.price)}                      
+                </strong>
+              </td>
+              <td>
+                <div>
+                  <button
+                    type="button"
+                    data-testid="decrement-product"
+                  disabled={productCarrinho.amount <= 1}
+                  onClick={() => handleProductDecrement(productCarrinho)}
+                  >
+                    <MdRemoveCircleOutline size={20} />
+                  </button>
+                  <input
+                    type="text"
+                    data-testid="product-amount"
+                    readOnly
+                    value={productCarrinho.amount}
+                  />
+                  <button
+                    type="button"
+                    data-testid="increment-product"
+                  onClick={() => handleProductIncrement(productCarrinho)}
+                  >
+                    <MdAddCircleOutline size={20} />
+                  </button>
+                </div>
+              </td>
+              <td>
+                <strong>
+                  {/* CALCULANDO O SUBTOTAL DOS PRODUTOS NO CARRINHO */}
+                  {formatPrice(productCarrinho.price * productCarrinho.amount)}                      
+                </strong>
+              </td>
+              <td>
                 <button
                   type="button"
-                  data-testid="decrement-product"
-                // disabled={product.amount <= 1}
-                // onClick={() => handleProductDecrement()}
+                  data-testid="remove-product"
+                onClick={() => handleRemoveProduct(productCarrinho.id)}
                 >
-                  <MdRemoveCircleOutline size={20} />
+                  <MdDelete size={20} />
                 </button>
-                <input
-                  type="text"
-                  data-testid="product-amount"
-                  readOnly
-                  value={2}
-                />
-                <button
-                  type="button"
-                  data-testid="increment-product"
-                // onClick={() => handleProductIncrement()}
-                >
-                  <MdAddCircleOutline size={20} />
-                </button>
-              </div>
-            </td>
-            <td>
-              <strong>R$ 359,80</strong>
-            </td>
-            <td>
-              <button
-                type="button"
-                data-testid="remove-product"
-              // onClick={() => handleRemoveProduct(product.id)}
-              >
-                <MdDelete size={20} />
-              </button>
-            </td>
-          </tr>
+              </td>
+            </tr>
+            )
+          })}
+          
         </tbody>
       </ProductTable>
-
+      
       <footer>
         <button type="button">Finalizar pedido</button>
 
         <Total>
           <span>TOTAL</span>
-          <strong>R$ 359,80</strong>
+          <strong>
+            {new Intl.NumberFormat('pt-BR', {
+              style: 'currency',
+              currency: 'BRL'
+            }).format(total)}
+            {/* {total} */}
+          </strong>
         </Total>
       </footer>
     </Container>
